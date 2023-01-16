@@ -44,6 +44,7 @@ Install the dependencies and devDependencies and start the app.
 
 ```sh
 flutter pub get
+flutter run
 ```
 
 
