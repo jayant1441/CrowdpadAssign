@@ -5,8 +5,6 @@
 
 CrowdPad is a community building tool curated for the everyday creator to monetize themselves.
 
-## Working Video
-
 ## Features
 
 - Auth Functionality (Login/ Signup)
@@ -18,7 +16,18 @@ CrowdPad is a community building tool curated for the everyday creator to moneti
 
 
 
-## UI
+## Signup Page
+<img src="https://user-images.githubusercontent.com/34379105/212640106-bd477ffc-6f3f-4ed2-89bc-5294e28f18b6.png" alt="Sign up Page" width="200"/>
+
+## Login Page 
+<img src="https://user-images.githubusercontent.com/34379105/212640607-e258a5a6-995a-4e07-8d36-1baa4dd757b9.png" alt="Login Page" width="200"/>
+
+## Home Page
+<img src="https://user-images.githubusercontent.com/34379105/212640532-8c0c37c7-f0f4-4e4b-827e-3f6de1424fe7.png" alt="Sign up Page" width="200"/>
+
+## Video Upload Page
+<img src="https://user-images.githubusercontent.com/34379105/212640583-65a4a92b-3637-4371-8cff-372d3386f22d.png" alt="Sign up Page" width="200"/>
+<img src="https://user-images.githubusercontent.com/34379105/212640575-09fe1d4c-7f84-48b3-bdf3-3e3a9e28736c.png" alt="Sign up Page" width="200"/>
 
 
 
