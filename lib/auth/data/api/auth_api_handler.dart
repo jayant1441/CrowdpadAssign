@@ -16,7 +16,7 @@ class AuthApiHandler{
     try {
       if (username.isNotEmpty && email.isNotEmpty && password.isNotEmpty && image != null) {
         /// creating a user in firebase auth
-        UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+        UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email.toString(), password: password.toString());
 
         /// getting the url for the picture uploaded
         String downloadUrl = await _uploadProPic(image);
@@ -58,7 +58,7 @@ class AuthApiHandler{
   /// The function [login] will login the user
   static Future<bool?> login(String email, String password) async {
     try{
-        await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+        await FirebaseAuth.instance.signInWithEmailAndPassword(email: email.toString(), password: password.toString());
         return true;
     }
     catch(e){

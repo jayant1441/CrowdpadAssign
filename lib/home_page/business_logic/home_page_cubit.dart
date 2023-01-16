@@ -6,13 +6,21 @@ import 'package:meta/meta.dart';
 part 'home_page_state.dart';
 
 class HomePageCubit extends Cubit<HomePageState> {
-  HomePageCubit() : super(const HomePageInitial());
+  HomePageCubit() : super(const HomePageLoading());
 
-  Future<void> getAllVideos() async{
+  List<VideoModel>? allVideos;
+
+  Future<void> getAllVideos({bool fetchNewVideos = false}) async{
     try {
       emit(const HomePageLoading());
-      List<VideoModel>? isVideoUploaded = await VideosApiHandler.getAllVideos();
-      emit(HomePageLoaded(isVideoUploaded));
+      if (allVideos != null && allVideos!.isNotEmpty && !fetchNewVideos){
+        emit(HomePageLoaded(allVideos));
+      }
+      else{
+        allVideos = await VideosApiHandler.getAllVideos();
+        emit(HomePageLoaded(allVideos));
+      }
+
     }
     catch(e){
       emit(HomePageError("$e"));

@@ -1,3 +1,4 @@
+import 'package:crowdpad_assignment/utils/colors_constant.dart';
 import 'package:flutter/material.dart';
 
 
@@ -19,10 +20,15 @@ class TextInputField extends StatelessWidget {
     return TextField(
       obscureText: toHide,
       controller: controller,
+      style: TextStyle(color: Colors.white),
+      cursorColor: AppColors.neonPinkColor,
       decoration: InputDecoration(
-        icon: Icon(myIcon),
+        icon: Icon(myIcon, color: AppColors.neonPinkColor,),
 
         labelText: myLabelText,
+        labelStyle: TextStyle(
+          color: AppColors.neonPinkColor
+        ),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(5),
             borderSide: const BorderSide(

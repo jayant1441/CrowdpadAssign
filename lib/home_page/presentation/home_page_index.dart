@@ -1,16 +1,16 @@
-import 'dart:io';
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:crowdpad_assignment/home_page/business_logic/home_page_cubit.dart';
+import 'package:crowdpad_assignment/home_page/presentation/widgets/home_page_loading_widget.dart';
+import 'package:crowdpad_assignment/home_page/presentation/widgets/pick_video_bottom_sheet.dart';
 import 'package:crowdpad_assignment/style_constants.dart';
-import 'package:crowdpad_assignment/upload_video_page/presentation/upload_video_page_index.dart';
 import 'package:crowdpad_assignment/home_page/presentation/video_page_index.dart';
 import 'package:crowdpad_assignment/utils/colors_constant.dart';
-import 'package:crowdpad_assignment/video_picker_utils.dart';
+import 'package:crowdpad_assignment/widgets/gredient_widget.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:rive/rive.dart' as rive;
 
 class MyHomePage extends StatefulWidget {
@@ -39,205 +39,183 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("CROWDPAD"),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: <Color>[
-                  AppColors.neonPinkColor,
-                  AppColors.neonBlueColor,
-                ]),
-          ),
+        title: GradientWidget(
+        child: const Text("CROWDPAD"),
+        gradient: AppGradients.neonPinkBlueGradient()
         ),
+        backgroundColor: Colors.black,
         actions: [
-          IconButton(onPressed: (){
+          IconButton(
+              onPressed: (){
             showModalBottomSheet(
                 isScrollControlled: true,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16),)
                 ),
                 context: context, builder: (_){
-              return Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
 
-                    ListTile(
-                        dense: true,
-                        leading: const SizedBox(),
-                      title: Center(child : Text("Choose From", style: w600TextStyle())),
-                      trailing: TextButton(
-                        onPressed: (){
-                          Navigator.pop(context);
-                        },
-                          child: const Text("Cancel", style: TextStyle(color: Colors.grey, letterSpacing: 1),))
-                    ),
-
-                    ListTile(
-                      leading: Icon(CupertinoIcons.photo, color: AppColors.neonYellowColor,),
-                      title: Text("Gallery", style: w600TextStyle()),
-                      dense: true,
-                      onTap: (){
-                        pickVideo(ImageSource.gallery);
-                      }
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: const Divider(),
-                    ),
-                    ListTile(
-                      leading: Icon(CupertinoIcons.camera, color: AppColors.greenColor,),
-                      title: Text("Camera", style: w600TextStyle()),
-                      dense: true,
-                      onTap: (){
-                        pickVideo(ImageSource.camera);
-                      },
-                    )
-                  ],
-                ),
-              );
+              return const PickVideoSourceBottomSheet();
             });
           },
-              icon: const Icon(CupertinoIcons.video_camera, size: 30,))
+              icon: GradientWidget(
+                gradient : AppGradients.neonPinkBlueGradient(),
+                  child: const Icon(CupertinoIcons.video_camera, size: 30,)
+              )
+          )
         ],
       ),
 
-      body: CustomRefreshIndicator(
-        onRefresh: () => BlocProvider.of<HomePageCubit>(context).getAllVideos(),
-        offsetToArmed: _offsetToTrigger,
-        builder: (context, child,  controller){
-          // todo learn more about AnimatedBuilder
-          return AnimatedBuilder(
-              animation: controller,
-              child: child,
-              builder: (context,child){
+      body: Stack(children: [
+        Container(
+            padding: const EdgeInsets.all(12.0),
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage("assets/background.jpg"),
+                    fit: BoxFit.cover
+                )
+            )
+        ),
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: Container(
+            decoration: BoxDecoration(color: Colors.grey.shade200.withOpacity(0.1)),
+          ),
+        ),
+        CustomRefreshIndicator(
+          onRefresh: () => BlocProvider.of<HomePageCubit>(context).getAllVideos(fetchNewVideos: true),
+          offsetToArmed: _offsetToTrigger,
+          builder: (context, child,  controller){
+            return AnimatedBuilder(
+                animation: controller,
+                child: child,
+                builder: (context,child){
+                  return Stack(
+                    children: [
+                      SizedBox(
+                          width: double.infinity,
+                          height: _offsetToTrigger * controller.value,
+                          child: const rive.RiveAnimation.asset('assets/rocket.riv', fit: BoxFit.cover,)
+                      ),
+                      Transform.translate(
+                        offset: Offset(0.0, _offsetToTrigger * controller.value),
+                        child: controller.isLoading ? const HomePageLoadingWidget() : child,
+                      )
+
+                    ],
+                  );
+                }
+            );
+          },
+          child: BlocConsumer<HomePageCubit, HomePageState> (
+            listener: (context, state){
+              if(state is HomePageError){
+                ScaffoldMessenger.of(context).showSnackBar( const SnackBar(content: Text("An Error Occurred")));
+              }
+            },
+            builder: (context, state){
+              if(state is HomePageLoading){
                 return Stack(
                   children: [
+                    const HomePageLoadingWidget(),
                     SizedBox(
                       width: double.infinity,
-                      height: _offsetToTrigger * controller.value,
-                      child: rive.RiveAnimation.asset('assets/rocket.riv', fit: BoxFit.cover,)
+                      height: double.infinity,
+                      child: ModalBarrier(
+                        color: Colors.black.withOpacity(0.5),
+                        dismissible: false,
+                      ),
                     ),
-                    Transform.translate(
-                        offset: Offset(0.0, _offsetToTrigger * controller.value),
-                      child: controller.isLoading ? LoadingWidget() : child,
+                    Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.neonPinkColor,
+                      ),
                     )
-
-                ],
+                  ],
                 );
               }
-          );
-        },
-        child: BlocConsumer<HomePageCubit, HomePageState> (
-          listener: (context, state){
-            if(state is HomePageError){
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("An Error Occurred")));
-            }
-          },
-          builder: (context, state){
-            if(state is HomePageLoading){
-              return const LoadingWidget();
-            }
-            else if(state is HomePageLoaded){
-              return Container(
-                padding: const EdgeInsets.all(12.0),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: <Color>[
-                        AppColors.neonPinkColor,
-                        AppColors.neonBlueColor,
-                      ]),
-                ),
-                child: GridView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: state.listOfVideos?.length ?? 0,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12.0,
-                      mainAxisSpacing: 12.0
-                  ),
-                  itemBuilder: (BuildContext context, int index){
-                    final _video = state.listOfVideos![index];
-                    return GestureDetector(
-                      onTap: (){
-                        Navigator.push(context, CupertinoPageRoute(builder: (_){
-                          return VideoPageIndex(listOfVideos: state.listOfVideos!, index: index, );
-                        }));
-                      },
-                      child: PhysicalModel(color: Colors.black,
-                        elevation: 10,
-                        borderRadius: BorderRadius.circular(16),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child:Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey,
+              else if(state is HomePageLoaded){
+                return Container(
+                    padding: const EdgeInsets.all(12.0),
+                    child: GridView.builder(
+                      itemCount: state.listOfVideos?.length ?? 0,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12.0,
+                          mainAxisSpacing: 12.0
+                      ),
+                      itemBuilder: (BuildContext context, int index){
+                        final video = state.listOfVideos![index];
+                        return GestureDetector(
+                          onTap: (){
+                            Navigator.push(context, CupertinoPageRoute(builder: (_){
+                              return VideoPageIndex(listOfVideos: state.listOfVideos!, index: index, );
+                            }));
+                          },
+                          child: PhysicalModel(color: Colors.black,
+                            elevation: 10,
+                            borderRadius: BorderRadius.circular(16),
+                            child: ClipRRect(
                               borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Image.network("${_video.thumbnail}", fit: BoxFit.cover,),
+                              child:Container(
+                                  decoration: BoxDecoration(
+                                      color: Colors.grey,
+                                      borderRadius: BorderRadius.circular(16),
+                                      image: DecorationImage(
+                                        image: CachedNetworkImageProvider(
+                                            "${video.thumbnail}"
+                                        ),
+                                        fit: BoxFit.fill,
+                                      )
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                                begin: Alignment.topCenter,
+                                                end: Alignment.bottomCenter,
+                                                colors:[
+                                                  Colors.transparent,
+                                                  Colors.black
+                                                ]
+                                            )
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                                        alignment: Alignment.bottomLeft,
+                                        child:  Text("@${video.username}", style: w600TextStyle(color: Colors.white),),
+                                      )
+                                    ],
+                                  )
 
-                          ) ,
-                        ),),
-                    );
-                  },
-                )
+                              ) ,
+                            ),),
+                        );
+                      },
+                    )
 
-              );
-            }
-            else if(state is HomePageError){
-              return Center(
-                child: Text("${state.errorMessage}"),
-              );
-            }
+                );
+              }
+              else if(state is HomePageError){
+                return Center(
+                  child: Text(state.errorMessage),
+                );
+              }
 
-              return SizedBox();
+              return const HomePageLoadingWidget();
 
-          },
-        ),
-
-      )
-    );
-  }
-
-  void pickVideo(ImageSource imageSource) async{
-    try {
-      File? _video = await VideoPickerUtils.pickVideoFromSource(imageSource);
-      if (_video != null) {
-        Navigator.push(context, CupertinoPageRoute(builder: (_){
-          return UploadVideoScreen(videoFile: _video);
-        }));
-      }
-    }
-    catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$e")));
-    }
-  }
-}
-
-class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      physics: const BouncingScrollPhysics(),
-      itemCount: 40,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12.0,
-          mainAxisSpacing: 12.0
-      ),
-      itemBuilder: (BuildContext context, int index){
-        return Container(
-          decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(16)
+            },
           ),
+        )
 
-        );
-      },
+      ],)
     );
   }
+
+
 }
+
 

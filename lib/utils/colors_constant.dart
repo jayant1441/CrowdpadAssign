@@ -9,3 +9,12 @@ class AppColors{
   static Color neonAquaColor = const Color.fromRGBO(0, 255, 240, 1);
   static Color greenColor = Colors.green;
 }
+
+class AppGradients{
+  static LinearGradient neonPinkBlueGradient({List<double>? stops}) => LinearGradient(
+      stops: stops,
+      colors: [
+        AppColors.neonPinkColor,
+        AppColors.neonBlueColor,
+      ]);
+}
